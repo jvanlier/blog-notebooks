@@ -7,18 +7,18 @@ Each directory is supposed to be fully self-contained, ideally with a requiremen
 A simple Python script on the root of the repo converts the post and images to a format that can be consumed by jekyll.
 
 Some conventions:
-- Name of markdown filename (and thus link) = name of directory. The notebook filename can be whatever.
-- Dir should contain a file called `meta.txt` with content: 
+- Name of markdown filename (and thus link) = name of directory. The notebook filename can be whatever. Let's assume the directory is called `<awesome-blog-post>`. 
+- This dir should contain a file called `meta.txt` with content: 
 
 ```
-title: "My post"
+title: "Awesome Blog Post"
 date: yyyy-MM-dd hh:mm:ss +02:00
 math: true  # or false
 ```
 
 - Output:
-    - `<post-name>.md` goes into `_output/_post/`
-    - Assets go into `_output/assets/blog/<post-name>`
+    - `awesome-blog-post.md` goes into `_output/_post/`
+    - Assets go into `_output/assets/blog/awesome-blog-post/`
 
 Just copy each of these to the root of the blog and you should be fine. Don't make changes in the `.md` file, make them in the Notebook and export again.
 
