@@ -10,9 +10,11 @@ Some conventions:
 - Name of markdown filename (and thus link) = name of directory. The notebook filename can be whatever.
 - Dir should contain a file called `meta.txt` with content: 
 
-	title: "My post"
-	date: yyyy-MM-dd hh:mm:ss +02:00
-	math: true  # or false
+```
+title: "My post"
+date: yyyy-MM-dd hh:mm:ss +02:00
+math: true  # or false
+```
 
 - Output:
     - `<post-name>.md` goes into `_output/_post/`
