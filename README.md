@@ -2,9 +2,9 @@
 
 This repo contains the notebooks for my [blog](https://jvlanalytics.nl/blog). 
 
-Each directory is supposed to be fully self-contained, ideally with a requirements.txt file in order to be able to reproduce environments easily. There should be one `.ipynb` file containing the actual post (code + markdown). The other files aren't used.
+Each directory is supposed to be fully self-contained, ideally with a requirements.txt file in order to be able to reproduce environments easily. There should be one `.ipynb` file containing the actual post (code + markdown). There may also be other `.py/.ipynb` files, but they aren't used to render the blog.
 
-A simple Python script on the root of the repo converts the post and images to a format that can be consumed by jekyll.
+A simple Python script on the root of the repo converts the post and images to a format that can be consumed by Jekyll.
 
 Some conventions:
 - Name of markdown filename (and thus link) = name of directory. The notebook filename can be whatever. Let's assume the directory is called `<awesome-blog-post>`. 
