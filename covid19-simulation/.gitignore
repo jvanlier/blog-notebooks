@@ -1,0 +1,17 @@
+# The CBS data is quite large and can be re-downloaded:
+data/*.zip
+data/buurt_2015/
+data/transformed/
+
+# These are quick to reproduce and I'm not planning on using them:
+data/results/sim-10km
+data/results/sim-20km
+
+# These will not be used:
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=0,sd_day=None)/
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=10,sd_day=None)/
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=3,sd_day=None)/
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=50,sd_day=None)/
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=None,sd_day=40)/
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=None,sd_day=60)/
+data/results/sim-30km/SimulationResult(n_days=250,tr_day=None,sd_day=80)/
