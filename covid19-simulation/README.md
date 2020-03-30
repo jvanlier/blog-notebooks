@@ -10,8 +10,8 @@ For more info, refer to the markdown cells in `post.ipynb` or see the blogpost a
 
 # Other files in this dir
 
-- `sim-2.5-10.ipynb` 
-- `sim-2.5-20.ipynb`
+- `sim-10.ipynb` 
+- `sim-20.ipynb`
 
 These contain the same simulations as `post.ipynb`, except with radius changed from 30 km to 10 and 20 km respectively. These notebooks have been stripped of blog text.
 
