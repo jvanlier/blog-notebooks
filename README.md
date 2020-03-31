@@ -24,7 +24,7 @@ math: true
 
 Tool usage:
 	
-	python nb-to-blog.py awesome-blog-post/post.ipynb
+	python _nb-to-blog-tool/nb-to-blog.py awesome-blog-post/post.ipynb
 
 Output:
 
