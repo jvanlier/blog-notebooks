@@ -5,7 +5,6 @@ import subprocess
 import shutil
 
 import click
-import yaml
 
 
 IMG_PATH = "assets/img/blog"
