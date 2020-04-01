@@ -13,6 +13,9 @@ IMG_PATH = "assets/img/blog"
 
 
 def _create_destination_dirs(notebook_dir: Path, post_name: str) -> Tuple[Path, Path]:
+    """Create destination directory for post and image assets. Exits if image asset dir already
+    exists.
+    """
     dest_post_dir = notebook_dir.parent / "_output" / "_posts"
     dest_post_dir.mkdir(parents=True, exist_ok=True)
     dest_asset_dir = notebook_dir.parent / "_output" / IMG_PATH / post_name
@@ -25,6 +28,9 @@ def _create_destination_dirs(notebook_dir: Path, post_name: str) -> Tuple[Path, 
 
 
 def _extract_date_from_ipynb(notebook: Path) -> str:
+    """Jekyll requires the date in the prefix of a post filename. Since we have the convention of
+    putting it in the first cell of the Notebook, extract it from there.
+    """
     with notebook.open("r") as f:
         nb_content = json.load(f)
 
@@ -45,6 +51,7 @@ def _extract_date_from_ipynb(notebook: Path) -> str:
 
 
 def _run_jupyter_nbconvert(notebook: Path) -> Tuple[Path, Path]:
+    """Launch subprocess to convert notebook to markdown."""
     cmd = ["jupyter", "nbconvert", "--to", "markdown", str(notebook)]
     result = subprocess.run(cmd)
     if not result.returncode == 0:
@@ -57,11 +64,13 @@ def _run_jupyter_nbconvert(notebook: Path) -> Tuple[Path, Path]:
 
 def _move_nbconvert_output(nbconvert_md: Path, nbconvert_files_dir: Path, dest_post: Path,
                            dest_asset_dir: Path):
+    """Move output of jupyter nbconvert from its default location to _output in root of repo."""
     shutil.move(nbconvert_md, dest_post)
     shutil.move(nbconvert_files_dir, dest_asset_dir)
 
 
 def _rewrite_png_links(notebook_stem: str, dest_post: Path, dest_asset_dir: Path):
+    """Rewrite references to pngs to be compatible with the Jekyll organisation."""
     str_to_replace = notebook_stem + "_files"
 
     with dest_post.open("r") as f:
@@ -71,6 +80,22 @@ def _rewrite_png_links(notebook_stem: str, dest_post: Path, dest_asset_dir: Path
 
     with dest_post.open("w") as f:
         f.write(contents)
+
+
+def _sanitize(dest_post: Path):
+    """Remove lines from the markdown file that do not add value to blog post. Such as HTML-based `tqdm`
+    progress bar boxes, that don't work anyway after conversion. This is currently the only thing that
+    gets removed.
+    """
+    with dest_post.open("r") as f:
+        contents = f.read().split("\n")
+    
+    contents_clean = [line
+                      for line in contents
+                      if not any(nc in line for nc in {"HBox(children=(FloatProgress"})]
+
+    with dest_post.open("w") as f:
+        f.write("\n".join(contents_clean))
 
 
 @click.command()
@@ -91,6 +116,8 @@ def main(notebook: str):
     _move_nbconvert_output(nbconvert_md, nbconvert_files_dir, dest_post, dest_asset_dir)
 
     _rewrite_png_links(notebook.stem, dest_post, dest_asset_dir)
+
+    _sanitize(dest_post)
 
 if __name__ == "__main__":
     main()
