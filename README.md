@@ -10,6 +10,7 @@ A simple executable Python script inside `_nb_to_blog_tool` converts the post an
 
 Conventions:
 - Name of resulting markdown filename (and thus link in Jekyll) = name of directory. The notebook filename can be whatever. Let's assume the directory is called `awesome-blog-post`. 
+- Standalone images (i.e. images that aren't embedded in the Notebook itself) must be a subdir called "img" in order to be included. E.g. in dir `awesome-blog-post/img`.
 - First cell of Notebook contains the Jekyll header in Raw NBConvert, e.g.:
 
 ```
@@ -18,6 +19,7 @@ layout: post
 title:  "Awesome Blog Post"
 date:   2020-03-31 14:00:00 +0200
 categories: blog
+permalink: awesome-blog-post
 math: true
 ---
 ```

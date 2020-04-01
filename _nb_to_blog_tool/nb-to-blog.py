@@ -69,17 +69,31 @@ def _move_nbconvert_output(nbconvert_md: Path, nbconvert_files_dir: Path, dest_p
     shutil.move(nbconvert_files_dir, dest_asset_dir)
 
 
-def _rewrite_png_links(notebook_stem: str, dest_post: Path, dest_asset_dir: Path):
-    """Rewrite references to pngs to be compatible with the Jekyll organisation."""
-    str_to_replace = notebook_stem + "_files"
+def _rewrite_image_refs(notebook_stem: str, dest_post: Path, dest_asset_dir: Path):
+    """Rewrite references to images to be compatible with the Jekyll organisation."""
+    jekyll_path = "/" + IMG_PATH + "/" + dest_post.stem
 
     with dest_post.open("r") as f:
         contents = f.read()
 
-    contents = contents.replace(str_to_replace, "/" + IMG_PATH + "/" + dest_post.stem)
+    # First, custom images for which we assume that they're placed in "img/". So we match on the partial
+    # markdown tag "](img/"
+    contents = re.sub(r"\](\(img\/)", "](" + jekyll_path + "/", contents)
+
+    # Next, the embedded images (originally base64 encoded in notebook):
+    contents = contents.replace(notebook_stem + "_files", jekyll_path)
 
     with dest_post.open("w") as f:
         f.write(contents)
+
+
+def _copy_standalone_images(notebook_dir: Path, dest_asset_dir: Path):
+    """Copy standalone images; if any. Convention is that they're placed in a dir called 'img'."""
+    img_dir = notebook_dir / "img"
+    if img_dir.is_dir():
+        for img in img_dir.glob("*"):
+            print(f"Including standalone image {img}")
+            shutil.copy(img, dest_asset_dir / img.name)
 
 
 def _sanitize(dest_post: Path):
@@ -115,7 +129,9 @@ def main(notebook: str):
 
     _move_nbconvert_output(nbconvert_md, nbconvert_files_dir, dest_post, dest_asset_dir)
 
-    _rewrite_png_links(notebook.stem, dest_post, dest_asset_dir)
+    _rewrite_image_refs(notebook.stem, dest_post, dest_asset_dir)
+
+    _copy_standalone_images(notebook.parent, dest_asset_dir)
 
     _sanitize(dest_post)
 
