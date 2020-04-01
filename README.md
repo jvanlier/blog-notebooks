@@ -6,7 +6,7 @@ Each directory is supposed to be fully self-contained, ideally with a requiremen
 
 Self-contained also means that data will be part of the repo if it's small (and not confidential). If it's too large and unreasonably blows up the repo: place it on online storage and include a script to acquire the data. The subdir `README.md` should contain all necessary instructions to reproduce the result.
 
-A simple Python script on the root of the repo converts the post and images to a format that can be consumed by Jekyll.
+A simple executable Python script inside `_nb_to_blog_tool` converts the post and images to a format that can be consumed by Jekyll. This can be installed with `pip` (e.g. `pip install -e .` while in the directory).
 
 Conventions:
 - Name of resulting markdown filename (and thus link in Jekyll) = name of directory. The notebook filename can be whatever. Let's assume the directory is called `awesome-blog-post`. 
@@ -24,7 +24,7 @@ math: true
 
 Tool usage:
 	
-	python _nb-to-blog-tool/nb-to-blog.py awesome-blog-post/post.ipynb
+	nb-to-blog.py awesome-blog-post/post.ipynb
 
 Output:
 

@@ -2,3 +2,4 @@ _output/
 **/.DS_Store
 **/.ipynb_checkpoints
 **/__pycache__
+_nb_to_blog_tool/nb_to_blog.egg-info/
