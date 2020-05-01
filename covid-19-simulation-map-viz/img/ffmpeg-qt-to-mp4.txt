@@ -1,0 +1,1 @@
+ffmpeg -i qt_originals/vid_circles_v3.mov -vcodec h264 -an -vf scale=740x604 vid_circles_v3.mp4
