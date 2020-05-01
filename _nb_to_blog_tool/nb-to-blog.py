@@ -5,12 +5,14 @@ from itertools import chain
 import re
 import shutil
 import subprocess
-from typing import Tuple
+from typing import Tuple, Optional
 
 import click
 
 
-IMG_PATH = "assets/img/blog"
+ASSET_PATH_TEMPL = "assets/blog/{post_name}/"
+IMG_NB_SUBDIR = "img_nb"
+IMG_CUSTOM_SUBDIR = "img"
 
 
 def _create_destination_dirs(notebook_dir: Path, post_name: str) -> Tuple[Path, Path]:
@@ -19,8 +21,7 @@ def _create_destination_dirs(notebook_dir: Path, post_name: str) -> Tuple[Path, 
     """
     dest_post_dir = notebook_dir.parent / "_output" / "_posts"
     dest_post_dir.mkdir(parents=True, exist_ok=True)
-    dest_asset_dir = notebook_dir.parent / "_output" / IMG_PATH / post_name
-    dest_asset_dir.parent.mkdir(parents=True, exist_ok=True)
+    dest_asset_dir = notebook_dir.parent / "_output" / ASSET_PATH_TEMPL.format(post_name=post_name)
     if dest_asset_dir.exists():
         print(f"Warning: {dest_asset_dir} already exists, aborting.")
         exit(1)
@@ -51,58 +52,57 @@ def _extract_date_from_ipynb(notebook: Path) -> str:
         exit(1)
 
 
-def _run_jupyter_nbconvert(notebook: Path) -> Tuple[Path, Path]:
+def _run_jupyter_nbconvert(notebook: Path) -> Tuple[Path, Optional[Path]]:
     """Launch subprocess to convert notebook to markdown."""
     cmd = ["jupyter", "nbconvert", "--to", "markdown", str(notebook)]
     result = subprocess.run(cmd)
     if not result.returncode == 0:
         print("jupyter nbconvert call returned with non-zero error code, aborting.")
         exit(1)
+
+    files_dir = notebook.parent / (notebook.stem + "_files")
  
     return notebook.parent / (notebook.stem + ".md"), \
-           notebook.parent / (notebook.stem + "_files")
+           files_dir if files_dir.exists() else None
 
 
-def _move_nbconvert_output(nbconvert_md: Path, nbconvert_files_dir: Path, dest_post: Path,
-                           dest_asset_dir: Path):
+def _move_nbconvert_output(nbconvert_md: Path, nbconvert_files_dir: Optional[Path],
+                           dest_post: Path, dest_asset_dir: Path):
     """Move output of jupyter nbconvert from its default location to _output in root of repo."""
     shutil.move(nbconvert_md, dest_post)
-    if nbconvert_files_dir.exists():
-        shutil.move(nbconvert_files_dir, dest_asset_dir)
-    else:
-        print(f"Warning: {nbconvert_files_dir} dir doesn't exist. "
-               "This could be the case if no plots were made.")
+    if nbconvert_files_dir:
+        shutil.move(nbconvert_files_dir, dest_asset_dir / IMG_NB_SUBDIR)
 
 
 def _rewrite_image_refs(notebook_stem: str, dest_post: Path, dest_asset_dir: Path):
     """Rewrite references to images to be compatible with the Jekyll organisation."""
-    jekyll_path = "/" + IMG_PATH + "/" + dest_post.stem
+    jekyll_path = "/" + ASSET_PATH_TEMPL.format(post_name=dest_post.stem) 
 
     with dest_post.open("r") as f:
         contents = f.read()
 
     # First, custom images for which we assume that they're placed in "img/". So we match on the partial
     # markdown tag "](img/"
-    contents = re.sub(r"\](\(img\/)", "](" + jekyll_path + "/", contents)
+    contents = re.sub(r"\](\(assets/img\/)", "](" + jekyll_path + IMG_CUSTOM_SUBDIR + "/", contents)
 
     # Next, the embedded images (originally base64 encoded in notebook):
-    contents = contents.replace(notebook_stem + "_files", jekyll_path)
+    contents = contents.replace(notebook_stem + "_files", jekyll_path + IMG_NB_SUBDIR)
 
     with dest_post.open("w") as f:
         f.write(contents)
 
 
-def _copy_standalone_images(notebook_dir: Path, dest_asset_dir: Path):
-    """Copy standalone images; if any. Convention is that they're placed in a dir called 'img'."""
-    img_dir = notebook_dir / "img"
-    if img_dir.is_dir():
-        if not dest_asset_dir.exists():
-            # This should only be the case if there were no embedded images.
-            dest_asset_dir.mkdir()
+def _copy_assets(notebook_dir: Path, dest_asset_dir: Path):
+    """Copy public assets; if any."""
+    src_asset_dir = notebook_dir / "assets"
+    if not src_asset_dir.is_dir():
+        return
 
-        for img in chain(img_dir.glob("*.png"), img_dir.glob("*.jpg")):
-            print(f"Including standalone image {img}")
-            shutil.copy(img, dest_asset_dir / img.name)
+    for thing in src_asset_dir.glob("*"):
+        if thing.is_dir():
+            shutil.copytree(thing, dest_asset_dir / thing.name)
+        else:
+            shtil.copy(thing, dest_asset_dir)
 
 
 def _sanitize(dest_post: Path):
@@ -140,7 +140,7 @@ def main(notebook: str):
 
     _rewrite_image_refs(notebook.stem, dest_post, dest_asset_dir)
 
-    _copy_standalone_images(notebook.parent, dest_asset_dir)
+    _copy_assets(notebook.parent, dest_asset_dir)
 
     _sanitize(dest_post)
 
