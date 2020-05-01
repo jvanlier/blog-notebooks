@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 from pathlib import Path
+from itertools import chain
 import re
 import shutil
 import subprocess
@@ -66,7 +67,11 @@ def _move_nbconvert_output(nbconvert_md: Path, nbconvert_files_dir: Path, dest_p
                            dest_asset_dir: Path):
     """Move output of jupyter nbconvert from its default location to _output in root of repo."""
     shutil.move(nbconvert_md, dest_post)
-    shutil.move(nbconvert_files_dir, dest_asset_dir)
+    if nbconvert_files_dir.exists():
+        shutil.move(nbconvert_files_dir, dest_asset_dir)
+    else:
+        print(f"Warning: {nbconvert_files_dir} dir doesn't exist. "
+               "This could be the case if no plots were made.")
 
 
 def _rewrite_image_refs(notebook_stem: str, dest_post: Path, dest_asset_dir: Path):
@@ -91,7 +96,11 @@ def _copy_standalone_images(notebook_dir: Path, dest_asset_dir: Path):
     """Copy standalone images; if any. Convention is that they're placed in a dir called 'img'."""
     img_dir = notebook_dir / "img"
     if img_dir.is_dir():
-        for img in img_dir.glob("*"):
+        if not dest_asset_dir.exists():
+            # This should only be the case if there were no embedded images.
+            dest_asset_dir.mkdir()
+
+        for img in chain(img_dir.glob("*.png"), img_dir.glob("*.jpg")):
             print(f"Including standalone image {img}")
             shutil.copy(img, dest_asset_dir / img.name)
 
